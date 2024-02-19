@@ -15,6 +15,8 @@ public class ClientHandler implements Runnable{
     private BufferedReader bufferedReader;
     private BufferedWriter bufferedWriter;
     private String clientUsername;
+    private boolean isCoordinator = false;
+
 
     public ClientHandler(Socket socket){
         try{
@@ -23,7 +25,7 @@ public class ClientHandler implements Runnable{
             this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.clientUsername = bufferedReader.readLine();
             clientHandlers.add(this);
-            broadcastMessage("Server: " + clientUsername + " has entered the chaqt");
+            broadcastMessage("Server: " + clientUsername + " has entered the chat");
 
         } catch (IOException e) {
             closeEverything(socket, bufferedReader, bufferedWriter);
@@ -60,13 +62,17 @@ public class ClientHandler implements Runnable{
         }
     }
     
-    public void removClientHandler() {
+    public void setCoordinator(boolean coordinator) {
+        isCoordinator = coordinator;
+    } 
+    
+    public void removeClientHandler() {
         clientHandlers.remove(this);
         broadcastMessage("Server: " + clientUsername + " has left the chat");
     }
 
     public void closeEverything(Socket socket, BufferedReader bufferedReader, BufferedWriter bufferedWriter){
-        removClientHandler();
+        removeClientHandler();
         try{
             if(bufferedReader != null){
                 bufferedReader.close();
