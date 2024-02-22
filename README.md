@@ -2,5 +2,6 @@
 Create a multi-client server with Java socket.
 
 
-Read pdf for instructions
-THE FILES IN THE DEVOPS IS JUST FOR TESTING NOT FINAL
+Read pdf for more detailed explanations
+
+Server file Client handler file are just for testing
