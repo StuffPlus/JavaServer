@@ -1,85 +1,67 @@
-import java.util.ArrayList;
-import java.net.Socket;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.BufferedReader;
+import java.io.*;
+import java.net.*;
 
+public class ClientHandler implements Runnable {
+    private Socket clientSocket;
+    private Server server;
+    private PrintWriter out;
+    private BufferedReader in;
+    private String clientId;
+    private boolean isCoordinator;
 
-public class ClientHandler implements Runnable{
-    //Defines a ClientHandler class that implements the Runnable interface, indicating it can be run in a separate thread.
-    public static ArrayList<ClientHandler> clientHandlers = new ArrayList<>(); //Defines a static ArrayList called clientHandlers to keep track of all client handlers.
-
-    private Socket socket;
-    private BufferedReader bufferedReader;
-    private BufferedWriter bufferedWriter;
-    private String clientUsername;
-    //Declares instance variables for the Socket, BufferedReader, BufferedWriter, and clientUsername.
-    public ClientHandler(Socket socket){ //Defines a constructor that initializes the Socket, BufferedReader, BufferedWriter, and clientUsername based on the client's input.
-        try{
-            this.socket = socket;
-            this.bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-            this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            this.clientUsername = bufferedReader.readLine();
-
-
-            clientHandlers.add(this);
-            broadcastMessage("Server: " + clientUsername + " has entered the chat"); //Adds the current instance of ClientHandler to the clientHandlers list and broadcasts a message to all clients that a new client has entered the chat.
-
-        } catch (IOException e) {
-            closeEverything(socket, bufferedReader, bufferedWriter);
-        }
+    public ClientHandler(Socket clientSocket, Server server) {
+        this.clientSocket = clientSocket;
+        this.server = server;
+        this.isCoordinator = false;
     }
+
     @Override
-    public void run(){ //Implements the run() method required by the Runnable interface. This method continuously reads messages from the client and broadcasts them to all other clients.
-        String messageFromClient;
+    public void run() {
+        try {
+            out = new PrintWriter(clientSocket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
-        while (socket.isConnected()) {
-            try {
-                messageFromClient = bufferedReader.readLine();
-                broadcastMessage(messageFromClient); //Defines a broadcastMessage() method to send a message to all clients except the sender.
-            }catch (IOException e){
-                closeEverything(socket, bufferedReader, bufferedWriter);
-                break;
+            String line;
+            while ((line = in.readLine()) != null) {
+                if (line.startsWith("JOIN")) {
+                    clientId = line.substring(5);
+                    server.registerClient(clientId, this);
+                    out.println("Welcome to the chat, " + clientId);
+                    printClientInfo();
+                } else {
+                    server.forwardMessage(line, clientId);
+                }
             }
+        } catch (IOException e) {
+            System.out.println("Exception in ClientHandler for client " + clientId + ": " + e.getMessage());
+        } finally {
+            server.unregisterClient(clientId);
+            closeResources();
         }
     }
 
-    public void broadcastMessage(String messageToSend){
-        for(ClientHandler clientHandler : clientHandlers){
-            try{
-                if (!clientHandler.clientUsername.equals(clientUsername)){
-                    clientHandler.bufferedWriter.write(messageToSend);
-                    clientHandler.bufferedWriter.newLine();
-                    clientHandler.bufferedWriter.flush();
-
-                } 
-            }catch(IOException e){
-                closeEverything(socket,bufferedReader,bufferedWriter);
-            }
-        }
-    }
-    
-    public void removeClientHandler() { //Implements a removeClientHandler() method to remove the current client handler from the list and broadcast a message to inform other clients that this client has left the chat.
-        clientHandlers.remove(this);
-        broadcastMessage("Server: " + clientUsername + " has left the chat");
+    public void printClientInfo() {
+        System.out.println("Client connected: " + clientId);
+        System.out.println("IP Address: " + clientSocket.getInetAddress().getHostAddress());
+        System.out.println("Port: " + clientSocket.getPort());
+        System.out.println("Is Coordinator: " + isCoordinator);
     }
 
-    public void closeEverything(Socket socket, BufferedReader bufferedReader, BufferedWriter bufferedWriter){ //Defines a closeEverything() method to close the socket, buffered reader, and buffered writer associated with this client handler when it's done.
-        removeClientHandler();
-        try{
-            if(bufferedReader != null){
-                bufferedReader.close();
-            }
-            if (bufferedWriter != null) {
-                bufferedWriter.close();
-            }
-            if (socket != null){
-                socket.close();     
-            }
-        }catch (IOException e) {
-            e.printStackTrace();
+    public void sendMessage(String message) {
+        out.println(message);
+    }
+
+    public void setCoordinator(boolean isCoordinator) {
+        this.isCoordinator = isCoordinator;
+    }
+
+    public void closeResources() {
+        try {
+            if (in != null) in.close();
+            if (out != null) out.close();
+            if (clientSocket != null) clientSocket.close();
+        } catch (IOException e) {
+            System.out.println("Error closing resources for client " + clientId);
         }
     }
 }

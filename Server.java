@@ -1,45 +1,70 @@
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.io.*;
+import java.net.*;
+import java.util.concurrent.*;
+import java.util.*;
 
-public class Server{
-
+public class Server {
+    private int port;
     private ServerSocket serverSocket;
-    private boolean isCoordinatorAssigned = false;
+    private ExecutorService pool;
+    private Map<String, ClientHandler> clients;
+    private String coordinatorId;
 
-    public Server(ServerSocket serverSocket) {
-        this.serverSocket = serverSocket;
+    public Server(int port) {
+        this.port = port;
+        this.pool = Executors.newCachedThreadPool();
+        this.clients = new ConcurrentHashMap<>();
     }
 
-    public void startServer(){ //Inside startServer(), it enters a loop to continuously accept client connections.
-        try{
-            while(!serverSocket.isClosed()){
-                Socket socket = serverSocket.accept();
-                System.out.println("A new client has joined"); //When a client connects, it prints a message and creates a ClientHandler instance to handle the client's requests.
-                ClientHandler clientHandler = new ClientHandler(socket);
+    public void start() throws IOException {
+        serverSocket = new ServerSocket(port);
+        System.out.println("Server started on port " + port);
 
-                Thread thread = new Thread(clientHandler); //Creates a new thread for each client and starts it.
-                thread.start();
-            }
-        } catch (IOException e){
-            e.printStackTrace();
-        }
-    } 
-
-    public void closeServerSocket(){ //Defines a method closeServerSocke() to close the server socket.
-        try{ //Inside closeServerSocke(), it checks if the server socket is not null and closes it if it's open
-            if (serverSocket != null){
-                serverSocket.close();
-            }
-        }catch (IOException e){
-            e.printStackTrace();
+        while (true) {
+            Socket clientSocket = serverSocket.accept();
+            ClientHandler clientHandler = new ClientHandler(clientSocket, this);
+            pool.execute(clientHandler);
         }
     }
-    public static void main(String[] args) throws IOException { //In the main method, it creates a ServerSocket instance listening on port 1234, creates a Server instance, and starts the server
-        ServerSocket serverSocket = new ServerSocket(1234);
-        Server server = new Server(serverSocket);
-        server.startServer();
+
+    public synchronized void registerClient(String clientId, ClientHandler clientHandler) {
+        if (clients.isEmpty()) {
+            coordinatorId = clientId;
+            clientHandler.setCoordinator(true);
+        }
+        clients.put(clientId, clientHandler);
+        System.out.println("Client " + clientId + " registered. Total clients: " + clients.size());
+    }
+
+    public synchronized void unregisterClient(String clientId) {
+        clients.remove(clientId);
+        System.out.println("Client " + clientId + " unregistered. Total clients: " + clients.size());
+        if (clientId.equals(coordinatorId)) {
+            assignNewCoordinator();
+        }
+    }
+
+    private void assignNewCoordinator() {
+        if (!clients.isEmpty()) {
+            String newCoordinatorId = clients.keySet().iterator().next();
+            coordinatorId = newCoordinatorId;
+            clients.get(newCoordinatorId).setCoordinator(true);
+            System.out.println("New coordinator assigned: " + newCoordinatorId);
+        }
+    }
+
+    public synchronized void forwardMessage(String message, String senderId) {
+        for (Map.Entry<String, ClientHandler> clientEntry : clients.entrySet()) {
+            if (!clientEntry.getKey().equals(senderId)) {
+                clientEntry.getValue().sendMessage(message);
+            }
+        }
+    }
+
+    public static void main(String[] args) throws IOException {
+        int port = 12345;
+        Server server = new Server(port);
+        server.start();
     }
 }
 
-    
