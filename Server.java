@@ -77,11 +77,10 @@ public class Server {
         }
     }
     
-
     void privateMessage(String msg, String nickName, String senderID){
         for(Map.Entry<String,ClientHandler> m : this.clients.entrySet()){
             if (m.getKey().equals(nickName)) {
-                m.getValue().sendMessage(senderID + "(Private)" + msg);
+                m.getValue().sendMessage(senderID + " (Private) " + msg);
             }
         }
     }
