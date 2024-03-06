@@ -56,13 +56,35 @@ public class Server {
         }
     }
 
-    public synchronized void forwardMessage(String message, String senderId) {
-        for (Map.Entry<String, ClientHandler> clientEntry : clients.entrySet()) {
-            if (!clientEntry.getKey().equals(senderId)) {
-                clientEntry.getValue().sendMessage(message);
+    public synchronized void forwardMessage(String message, String senderId) {//forwardMessage() Method: Forwards a message from one client to all other connected clients.
+
+        if(message.contains("@sendUser")){
+            String[] str = message.split(" ");
+            String msgNew="";
+            for(int i = 3; i < str.length;i++){
+                msgNew += str[i];
+                msgNew += " ";
+            }
+            System.out.println(str[2]);
+            privateMessage(msgNew, str[2], senderId);
+        
+        }else{
+            for (Map.Entry<String, ClientHandler> clientEntry : clients.entrySet()) {
+                if (!clientEntry.getKey().equals(senderId)) {
+                    clientEntry.getValue().sendMessage(message);
+                }
             }
         }
     }
+    
+    void privateMessage(String msg, String nickName, String senderID){
+        for(Map.Entry<String,ClientHandler> m : this.clients.entrySet()){
+            if (m.getKey().equals(nickName)) {
+                m.getValue().sendMessage(senderID + " (Private) " + msg);
+            }
+        }
+    }
+
     public Map<String, ClientHandler> getClients() {
         return clients;
     }
