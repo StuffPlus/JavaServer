@@ -12,8 +12,8 @@ public class Client {
     private BufferedWriter bufferedWriter;
     private String username;
 
-    public Client(Socket socket, String username){
-        try{
+    public Client(Socket socket, String username) {
+        try {
             this.socket = socket;
             this.bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -21,7 +21,7 @@ public class Client {
 
             // Send JOIN message to server
             sendJoinMessage();
-        }catch (IOException e){
+        } catch (IOException e) {
             closeEverything(socket, bufferedReader, bufferedWriter);
         }
     }
@@ -36,59 +36,70 @@ public class Client {
         }
     }
 
-    public void sendMessage(){
-        try{
+    public void sendMessage() {
+        try {
             Scanner scanner = new Scanner(System.in);
-            while (socket.isConnected()){
+            while (socket.isConnected()) {
                 String messageToSend = scanner.nextLine();
                 if (messageToSend.equalsIgnoreCase("exit")) {
                     break;
+                } else if (messageToSend.equalsIgnoreCase("REQUEST_DETAILS")) {
+                    requestMemberDetails();
+                } else {
+                    bufferedWriter.write(username + ": " + messageToSend);
+                    bufferedWriter.newLine();
+                    bufferedWriter.flush();
                 }
-                bufferedWriter.write(username + ": " + messageToSend);
-                bufferedWriter.newLine();
-                bufferedWriter.flush();
             }
+            scanner.close();
             closeEverything(socket, bufferedReader, bufferedWriter);
-        } catch(IOException e){
+        } catch (IOException e) {
             closeEverything(socket, bufferedReader, bufferedWriter);
         }
     }
 
-    public void listenForMessage(){
-        new Thread(new Runnable(){
-            @Override
-            public void run(){
-                String messageFromGroupChat;
+    private void requestMemberDetails() {
+        try {
+            bufferedWriter.write("REQUEST_DETAILS");
+            bufferedWriter.newLine();
+            bufferedWriter.flush();
+        } catch (IOException e) {
+            closeEverything(socket, bufferedReader, bufferedWriter);
+        }
+    }
 
-                while (socket.isConnected()){
-                    try{
-                        messageFromGroupChat = bufferedReader.readLine();
-                        System.out.println(messageFromGroupChat);
-                    } catch(IOException e){
-                        closeEverything(socket, bufferedReader, bufferedWriter);
-                    }
+    public void listenForMessage() {
+        new Thread(() -> {
+            String messageFromGroupChat;
+
+            while (socket.isConnected()) {
+                try {
+                    messageFromGroupChat = bufferedReader.readLine();
+                    System.out.println(messageFromGroupChat);
+                } catch (IOException e) {
+                    closeEverything(socket, bufferedReader, bufferedWriter);
                 }
             }
         }).start();
     }
 
-    public void closeEverything(Socket socket, BufferedReader bufferedReader, BufferedWriter bufferedWriter){
-        try{
-            if(bufferedReader != null){
+    public void closeEverything(Socket socket, BufferedReader bufferedReader, BufferedWriter bufferedWriter) {
+        try {
+            if (bufferedReader != null) {
                 bufferedReader.close();
             }
             if (bufferedWriter != null) {
                 bufferedWriter.close();
             }
-            if (socket != null){
+            if (socket != null) {
                 socket.close();
             }
-        }catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public static void main(String[] args) throws IOException{
+    public static void main(String[] args) throws IOException {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Enter your username");
         String username = scanner.nextLine();

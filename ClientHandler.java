@@ -1,5 +1,9 @@
-import java.io.*;
-import java.net.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.util.Map;
 
 public class ClientHandler implements Runnable {
     private Socket clientSocket;
@@ -28,6 +32,9 @@ public class ClientHandler implements Runnable {
                     server.registerClient(clientId, this);
                     out.println("Welcome to the chat, " + clientId);
                     printClientInfo();
+                } else if (line.equalsIgnoreCase("REQUEST_DETAILS")) {
+                    // Handle request for member details
+                    sendMemberDetails();
                 } else {
                     server.forwardMessage(line, clientId);
                 }
@@ -51,8 +58,27 @@ public class ClientHandler implements Runnable {
         out.println(message);
     }
 
+    private void sendMemberDetails() {
+        StringBuilder details = new StringBuilder();
+        details.append("MEMBER_DETAILS\n");
+        for (Map.Entry<String, ClientHandler> entry : server.getClients().entrySet()) {
+            details.append(entry.getKey()).append(": ")
+                   .append(entry.getValue().getClientIpAddress()).append(", ")
+                   .append(entry.getValue().getClientPort()).append("\n");
+        }
+        out.println(details.toString());
+    }
+
     public void setCoordinator(boolean isCoordinator) {
         this.isCoordinator = isCoordinator;
+    }
+
+    public String getClientIpAddress() {
+        return clientSocket.getInetAddress().getHostAddress();
+    }
+
+    public int getClientPort() {
+        return clientSocket.getPort();
     }
 
     public void closeResources() {
@@ -65,4 +91,3 @@ public class ClientHandler implements Runnable {
         }
     }
 }
-
