@@ -25,7 +25,6 @@ public class Server {
 
         while (true) {
             Socket clientSocket = serverSocket.accept();
-
             ClientHandler clientHandler = new ClientHandler(clientSocket, this);
             pool.execute(clientHandler);
         }
@@ -36,7 +35,6 @@ public class Server {
             coordinatorId = clientId;
             clientHandler.setCoordinator(true);
         }
-
         clients.put(clientId, clientHandler);
         System.out.println("Client " + clientId + " registered. Total clients: " + clients.size());
     }
@@ -44,6 +42,11 @@ public class Server {
     public synchronized void unregisterClient(String clientId) {
         clients.remove(clientId);
         System.out.println("Client " + clientId + " unregistered. Total clients: " + clients.size());
+
+        // Notify other clients that this client has left
+        String leaveMessage = "Client " + clientId + " has left the chat.";
+        forwardMessage(leaveMessage, "Server");
+
         if (clientId.equals(coordinatorId)) {
             assignNewCoordinator();
         }
@@ -54,23 +57,25 @@ public class Server {
             String newCoordinatorId = clients.keySet().iterator().next();
             coordinatorId = newCoordinatorId;
             clients.get(newCoordinatorId).setCoordinator(true);
-            System.out.println("New coordinator assigned: " + newCoordinatorId);
+            System.out.println("Client " + newCoordinatorId + " has become the new coordinator.");
+
+            // Notify all clients about the new coordinator
+            String newCoordinatorMessage = "Client " + newCoordinatorId + " has become the new coordinator.";
+            forwardMessage(newCoordinatorMessage, "Server");
         }
     }
 
-    public synchronized void forwardMessage(String message, String senderId) {//forwardMessage() Method: Forwards a message from one client to all other connected clients.
-
-        if(message.contains("@sendUser")){
+    public synchronized void forwardMessage(String message, String senderId) {
+        if (message.contains("@DM")) {
             String[] str = message.split(" ");
-            String msgNew="";
-            for(int i = 3; i < str.length;i++){
+            String msgNew = "";
+            for (int i = 3; i < str.length; i++) {
                 msgNew += str[i];
                 msgNew += " ";
             }
             System.out.println(str[2]);
             privateMessage(msgNew, str[2], senderId);
-        
-        }else{
+        } else {
             for (Map.Entry<String, ClientHandler> clientEntry : clients.entrySet()) {
                 if (!clientEntry.getKey().equals(senderId)) {
                     clientEntry.getValue().sendMessage(message);
@@ -78,17 +83,21 @@ public class Server {
             }
         }
     }
-    
-    void privateMessage(String msg, String nickName, String senderID){
-        for(Map.Entry<String,ClientHandler> m : this.clients.entrySet()){
+
+    void privateMessage(String msg, String nickName, String senderID) {
+        for (Map.Entry<String, ClientHandler> m : this.clients.entrySet()) {
             if (m.getKey().equals(nickName)) {
-                m.getValue().sendMessage(senderID + "(Private): " + msg);
+                m.getValue().sendMessage(senderID + " (Private) " + msg);
             }
         }
     }
 
     public Map<String, ClientHandler> getClients() {
         return clients;
+    }
+
+    public String getCoordinatorId() {
+        return coordinatorId;
     }
 
     public static void main(String[] args) throws IOException {

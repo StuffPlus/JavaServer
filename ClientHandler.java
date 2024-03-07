@@ -30,6 +30,10 @@ public class ClientHandler implements Runnable {
                 if (line.startsWith("JOIN")) {
                     clientId = line.substring(5);
                     server.registerClient(clientId, this);
+
+                    // Notify the client about the coordinator
+                    sendCoordinatorInfo();
+
                     out.println("Welcome to the chat, " + clientId);
                     printClientInfo();
                 } else if (line.equalsIgnoreCase("REQUEST_DETAILS")) {
@@ -44,6 +48,13 @@ public class ClientHandler implements Runnable {
         } finally {
             server.unregisterClient(clientId);
             closeResources();
+        }
+    }
+
+    // Add this method to send coordinator information to new clients
+    private void sendCoordinatorInfo() {
+        if (server.getCoordinatorId() != null) {
+            out.println("Coordinator " + server.getCoordinatorId());
         }
     }
 
