@@ -25,6 +25,7 @@ public class Server {
 
         while (true) {
             Socket clientSocket = serverSocket.accept();
+
             ClientHandler clientHandler = new ClientHandler(clientSocket, this);
             pool.execute(clientHandler);
         }
@@ -35,6 +36,7 @@ public class Server {
             coordinatorId = clientId;
             clientHandler.setCoordinator(true);
         }
+
         clients.put(clientId, clientHandler);
         System.out.println("Client " + clientId + " registered. Total clients: " + clients.size());
     }
@@ -80,7 +82,7 @@ public class Server {
     void privateMessage(String msg, String nickName, String senderID){
         for(Map.Entry<String,ClientHandler> m : this.clients.entrySet()){
             if (m.getKey().equals(nickName)) {
-                m.getValue().sendMessage(senderID + " (Private) " + msg);
+                m.getValue().sendMessage(senderID + "(Private): " + msg);
             }
         }
     }

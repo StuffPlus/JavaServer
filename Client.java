@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Scanner;
 
 public class Client {
@@ -18,7 +21,7 @@ public class Client {
             this.bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.username = username;
-
+            
             // Send JOIN message to server
             sendJoinMessage();
         } catch (IOException e) {
@@ -111,3 +114,4 @@ public class Client {
         scanner.close();
     }
 }
+
