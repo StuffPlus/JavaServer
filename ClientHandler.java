@@ -29,13 +29,16 @@ public class ClientHandler implements Runnable {
             while ((line = in.readLine()) != null) {
                 if (line.startsWith("JOIN")) {
                     clientId = line.substring(5);
-                    server.registerClient(clientId, this);
-
-                    // Notify the client about the coordinator
-                    sendCoordinatorInfo();
-
-                    out.println("Welcome to the chat, " + clientId);
-                    printClientInfo();
+                    boolean registered = server.registerClient(clientId, this);
+                    if (!registered) {
+                        out.println("Username Taken"); // Inform the client
+                        break; // Exit the loop or handle as needed
+                    } else {
+                        out.println("Welcome to the chat, " + clientId); // Existing welcome message
+                        sendCoordinatorInfo();// Notify the client about the coordinator
+                        printClientInfo();
+                    }
+                    
                 } else if (line.equalsIgnoreCase("REQUEST_DETAILS")) {
                     // Handle request for member details
                     sendMemberDetails();

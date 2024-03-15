@@ -31,6 +31,14 @@ public class Client {
             bufferedWriter.write("JOIN " + username);
             bufferedWriter.newLine();
             bufferedWriter.flush();
+            // Wait for server response on username availability
+            String serverResponse = bufferedReader.readLine();
+            if ("Username Taken".equals(serverResponse)) {
+                System.out.println("Username already taken. Please restart the application and choose a different unique username.");
+                // Close resources and exit or prompt for new username again
+                closeEverything(socket, bufferedReader, bufferedWriter);
+                System.exit(1); // For simplicity, exiting. Implement retry logic as needed.
+            }
         } catch (IOException e) {
             closeEverything(socket, bufferedReader, bufferedWriter);
         }

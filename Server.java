@@ -30,13 +30,20 @@ public class Server {
         }
     }
 
-    public synchronized void registerClient(String clientId, ClientHandler clientHandler) {
-        if (clients.isEmpty()) {
-            coordinatorId = clientId;
-            clientHandler.setCoordinator(true);
+    public synchronized boolean registerClient(String clientId, ClientHandler clientHandler) {
+        if (clients.containsKey(clientId)) {
+            System.out.println("Username already taken. Please choose a different username.");
+            return false; // Username is taken
+        }else { 
+        
+            if (clients.isEmpty()) {
+                coordinatorId = clientId;
+                clientHandler.setCoordinator(true);
+            }
+            clients.put(clientId, clientHandler);
+            System.out.println("Client " + clientId + " registered. Total clients: " + clients.size());
+            return true; // Successfully registered
         }
-        clients.put(clientId, clientHandler);
-        System.out.println("Client " + clientId + " registered. Total clients: " + clients.size());
     }
 
     public synchronized void unregisterClient(String clientId) {
@@ -87,7 +94,7 @@ public class Server {
     void privateMessage(String msg, String nickName, String senderID) {
         for (Map.Entry<String, ClientHandler> m : this.clients.entrySet()) {
             if (m.getKey().equals(nickName)) {
-                m.getValue().sendMessage(senderID + " (Private) " + msg);
+                m.getValue().sendMessage(senderID + "(Private): " + msg);
             }
         }
     }
