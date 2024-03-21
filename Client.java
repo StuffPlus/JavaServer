@@ -109,9 +109,14 @@ public class Client {
 
     public static void main(String[] args) throws IOException {
         Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter ip address");
+        String host = scanner.nextLine();
+        System.out.println("Enter port number");
+        int port = scanner.nextInt();
         System.out.println("Enter your username");
         String username = scanner.nextLine();
-        Socket socket = new Socket("localhost", 12345);
+        username = scanner.nextLine();
+        Socket socket = new Socket(host, port);
         Client client = new Client(socket, username);
         System.out.println("You have connected to the server");
         client.listenForMessage();
