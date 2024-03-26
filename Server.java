@@ -107,6 +107,13 @@ public class Server {
         return coordinatorId;
     }
 
+    public void stop() throws IOException { // close the server down for testing purposes
+        pool.shutdown();
+        if (serverSocket != null && !serverSocket.isClosed()) {
+            serverSocket.close();
+        }
+    }
+
     public static void main(String[] args) throws IOException {
         int port = 12345;
         Server server = new Server(port);
