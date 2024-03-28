@@ -40,7 +40,7 @@ public class serverTest{
         if (!clients.isEmpty()) {
             String newCoordinatorId = clients.keySet().iterator().next();
             clients.get(newCoordinatorId).setCoordinator(true);
-            assertTrue(true);
+            assertEquals(true, clients.get(newCoordinatorId));
 
             
         }else{
@@ -74,6 +74,12 @@ public class serverTest{
         }
     }
     
-    
+    @Test
+    public void unregisterClientTest() throws IOException{
+        Socket socket5 = new Socket(host, port);
+        Client client6 = new Client(socket5, "Test6");
+        clients.remove("Test6");
+        assertEquals(0,clients.size());
+    }
         
 }
