@@ -121,9 +121,15 @@ public class ClientHandler implements Runnable {
         return clientSocket.getPort();
     }
 
+
     // Cleans up resources by closing I/O streams and the socket when the client disconnects or when an error occurs
     public void closeResources() {
         try {
             if (in != null) in.close();
             if (out != null) out.close();
-            if (clientSocket != null) client
+            if (clientSocket != null) clientSocket.close(); // Corrected line
+        } catch (IOException e) {
+            System.out.println("Error closing resources for client " + clientId);
+        }
+    }
+}
