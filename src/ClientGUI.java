@@ -1,3 +1,4 @@
+package src;
 import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.*;
