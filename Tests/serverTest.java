@@ -13,19 +13,14 @@ public class serverTest{
 
     private String host = "localhost";
     private int port = 5000;
-
+    private Map<String, ClientHandler> clients;
     @Before
     public void startServerTest() throws IOException{
         Server server = new Server(port);
         server.start();
 
     }
-    
-    @After
-    public void tearDown() {
-        // Stop server after each test
-        server.stop();
-    }
+
     @Test
     public void addTestClient() throws IOException{
        

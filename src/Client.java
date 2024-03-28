@@ -5,7 +5,7 @@
 // - Omith Chowdhury - 001236697
 // - Daim Ahmed - 001223454
 // - Mohammed Amiin Mohammed - 001223569
-// - Toung-Luan X Bach - 001232844
+// - Tuong-Luan X Bach - 001232844
 // - Zafer Ahmed - 001225733
 
 // CODE FOR THE CLIENTS OF THE APPLICATION
@@ -148,7 +148,7 @@ public class Client {
         int port = Integer.parseInt(scanner.nextLine());
         System.out.println("Enter your username:");
         String username = scanner.nextLine();
-
+        scanner.close();
         try {
             Socket socket = new Socket(host, port);
             Client client = new Client(socket, username);

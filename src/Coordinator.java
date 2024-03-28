@@ -5,7 +5,7 @@
 // - Omith Chowdhury - 001236697
 // - Daim Ahmed - 001223454
 // - Mohammed Amiin Mohammed - 001223569
-// - Toung-Luan X Bach - 001232844
+// - Tuong-Luan X Bach - 001232844
 // - Zafer Ahmed - 001225733
 
 // CODE FOR THE COORDINATOR
