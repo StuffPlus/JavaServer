@@ -31,6 +31,7 @@ public class Server {
         }
     }
 
+    
     public synchronized boolean registerClient(String clientId, ClientHandler clientHandler) {
         if (clients.containsKey(clientId)) {
             System.out.println("Username already taken. Please choose a different username.");
@@ -92,7 +93,7 @@ public class Server {
         }
     }
 
-    void privateMessage(String msg, String nickName, String senderID) {
+    public void privateMessage(String msg, String nickName, String senderID) {
         for (Map.Entry<String, ClientHandler> m : this.clients.entrySet()) {
             if (m.getKey().equals(nickName)) {
                 m.getValue().sendMessage(senderID + "(Private): " + msg);

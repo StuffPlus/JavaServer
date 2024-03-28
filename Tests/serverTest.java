@@ -5,24 +5,26 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Map;
-
-
-
+import src.*;
 import org.junit.*;
 
-import src.Client;
-import src.ClientHandler;
-import src.Server;
 
 public class serverTest{
-    private Map<String, ClientHandler> clients;
+
     private String host = "localhost";
-    private int port = 6666;
+    private int port = 5000;
 
     @Before
     public void startServerTest() throws IOException{
         Server server = new Server(port);
         server.start();
+
+    }
+    
+    @After
+    public void tearDown() {
+        // Stop server after each test
+        server.stop();
     }
     @Test
     public void addTestClient() throws IOException{
@@ -80,6 +82,21 @@ public class serverTest{
         Client client6 = new Client(socket5, "Test6");
         clients.remove("Test6");
         assertEquals(0,clients.size());
+        
+    }
+    @Test
+    public void getMemberDetailsTest() throws IOException{
+        Server server2 = new Server(1234);
+        server2.start();
+
+        StringBuilder details = new StringBuilder();
+        details.append("MEMBER_DETAILS\n");
+        for (Map.Entry<String, ClientHandler> entry : server2.getClients().entrySet()) {
+            details.append(entry.getKey()).append(": ")
+                   .append(entry.getValue().getClientIpAddress()).append(", ")
+                   .append(entry.getValue().getClientPort()).append("\n");
+        }
+        assertEquals(false, details.isEmpty());
     }
         
 }
