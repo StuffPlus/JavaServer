@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Map;
+import java.util.Random;
 import src.*;
 import org.junit.*;
 
@@ -12,7 +13,9 @@ import org.junit.*;
 public class serverTest{
 
     private String host = "localhost";
-    private int port = 5000;
+    Random rn = new Random();
+    int n = rn.nextInt(10000);
+    private int port = n;
     private Map<String, ClientHandler> clients;
     @Before
     public void startServerTest() throws IOException{
