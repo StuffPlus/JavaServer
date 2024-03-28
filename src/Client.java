@@ -29,6 +29,9 @@ public class Client {
     // This client's username
     private String username;
 
+    // This is for the Graphical User Interface of the chat application
+    private ClientGUI clientGUI;
+
     // Constructor: Sets up the client with a connection to the server and a username
     public Client(Socket socket, String username) {
         try {
@@ -37,6 +40,9 @@ public class Client {
             this.bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.username = username;
+
+            // This starts the GUI
+            this.clientGUI = new ClientGUI(this,username);
 
             // This is to join the chat with the chosen username
             sendJoinMessage();
@@ -134,14 +140,21 @@ public class Client {
     }
 
     // Main method to run the client
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        // CollectS connection details and username from the user
-        System.out.println("Enter ip address");
+        System.out.println("Enter IP address:");
         String host = scanner.nextLine();
-        System.out.println("Enter port number");
-        int port = scanner.nextInt();
-        // Fix for Scanner bug consuming newline
-        scanner.nextLine();
-        System.out.println("Enter your username");
-        String username = scanner
+        System.out.println("Enter port number:");
+        int port = Integer.parseInt(scanner.nextLine());
+        System.out.println("Enter your username:");
+        String username = scanner.nextLine();
+
+        try {
+            Socket socket = new Socket(host, port);
+            Client client = new Client(socket, username);
+        } catch (IOException e) {
+            System.out.println("Unable to connect to server. Please check the IP address and port number.");
+            e.printStackTrace();
+        }
+    }
+}
