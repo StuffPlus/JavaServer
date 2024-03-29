@@ -20,17 +20,17 @@ public class serverTest{
     @Before
     public void startServerTest() throws IOException{
         Server server = new Server(port);
-        server.start();
+        server.start(); // create a server
 
     }
 
     @Test
     public void addTestClient() throws IOException{
        
-        String username = "Luan";
+        String username = "testito";
         Socket socket = new Socket(host, port);
         Client client = new Client(socket, username);
-        assertEquals(1,clients.size());
+        assertEquals(1,clients.size()); // check the size of the clients
     }
 
     @Test
@@ -38,9 +38,9 @@ public class serverTest{
         Socket socket = new Socket(host, port);
         Client client = new Client(socket, "Test");
         if (!clients.isEmpty()) {
-            String newCoordinatorId = clients.keySet().iterator().next();
-            clients.get(newCoordinatorId).setCoordinator(true);
-            assertEquals(true, clients.get(newCoordinatorId));
+            String newCoordinatorId = clients.keySet().iterator().next(); // get the next user in the map
+            clients.get(newCoordinatorId).setCoordinator(true); // set the user to the coordinator
+            assertEquals(true, clients.get(newCoordinatorId)); // check if the flag to set the coordinator is true
 
             
         }else{
@@ -57,7 +57,10 @@ public class serverTest{
             if (!clientEntry.getKey().equals("Test2")) {
                 clientEntry.getValue().sendMessage("Hello all");
                 assertTrue(true);
+            }else{
+                assertFalse(false);
             }
+
         }
         socket2.close();
     }
@@ -70,6 +73,9 @@ public class serverTest{
         for (Map.Entry<String, ClientHandler> m : this.clients.entrySet()) {
             if (m.getKey().equals("Test4")) {
                 m.getValue().sendMessage("Test5" + "(Private): " + "Hello");
+                assertTrue(true);
+            }else{
+                assertFalse(false);
             }
         }
     }
@@ -79,7 +85,7 @@ public class serverTest{
         Socket socket5 = new Socket(host, port);
         Client client6 = new Client(socket5, "Test6");
         clients.remove("Test6");
-        assertEquals(0,clients.size());
+        assertEquals(0,clients.size()); // check the size of the map
         
     }
     @Test
@@ -92,9 +98,9 @@ public class serverTest{
         for (Map.Entry<String, ClientHandler> entry : server2.getClients().entrySet()) {
             details.append(entry.getKey()).append(": ")
                    .append(entry.getValue().getClientIpAddress()).append(", ")
-                   .append(entry.getValue().getClientPort()).append("\n");
+                   .append(entry.getValue().getClientPort()).append("\n"); 
         }
-        assertEquals(false, details.isEmpty());
+        assertEquals(false, details.isEmpty()); // check if the clients have been added
     }
         
 }

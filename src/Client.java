@@ -9,77 +9,64 @@
 // - Zafer Ahmed - 001225733
 
 // CODE FOR THE CLIENTS OF THE APPLICATION
-package src;
 import java.io.*;
 import java.net.*;
 
 public class Client {
-    // Socket to communicate with the server
     private Socket socket;
-    // Reader to read the messages from the server
     private BufferedReader bufferedReader;
-    // Writer to send messages to the server
     private BufferedWriter bufferedWriter;
-    // This is client's username
     private String username;
-    // This is for the Graphical User Interface of the chat application
     private ClientGUI clientGUI;
 
-    // Constructor: Sets up the client with a connection to the server and a username
+    // Constructor for the Client class
+    // Initializes the socket, I/O streams, username, and GUI
     public Client(Socket socket, String username) {
         try {
             this.socket = socket;
             this.bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.username = username;
-            // This sarts the GUI
             this.clientGUI = new ClientGUI(this, username);
-            // To join the chat
             sendJoinMessage();
-            // Listening for incoming messages from the server
             listenForMessage();
         } catch (IOException e) {
-            // If any IO operations fail, closes all connections cleanly
             closeEverything();
         }
     }
 
-    // Handles the initial JOIN message to the server
+    // Sends a join message to the server with the client's username
+    // Handles the server's response and closes the connection if the username is taken
     private void sendJoinMessage() {
         try {
             bufferedWriter.write("JOIN " + username);
             bufferedWriter.newLine();
             bufferedWriter.flush();
-            // Reading server's response to the join request
             String serverResponse = bufferedReader.readLine();
             if ("Username Taken".equals(serverResponse)) {
-                // Informs user if username is taken and close the application
                 clientGUI.showErrorMessage("Username already taken. Please restart the application and choose a different unique username.");
                 closeEverything();
-                System.exit(1); // Exiting the application
+                System.exit(1);
             }
         } catch (IOException e) {
             closeEverything();
         }
     }
 
-    // Sends a message to the server requesting to join the chat with the provided username
+    // Sends a message to the server based on the message type
+    // Handles quit, request details, private messages, and public messages
     public void sendMessage(String messageToSend) {
         try {
             if (messageToSend.equalsIgnoreCase("QUIT")) {
-                // If user decides to quit
                 bufferedWriter.write("QUIT");
                 bufferedWriter.newLine();
                 bufferedWriter.flush();
                 closeEverything();
             } else if (messageToSend.equalsIgnoreCase("REQUEST_DETAILS")) {
-                // Special command to request details from the server
                 requestMemberDetails();
             } else if (messageToSend.startsWith("@dm")) {
-                // Handling private messages
                 sendPrivateMessage(messageToSend);
             } else {
-                // Sending a public message with a timestamp
                 String formattedMessage = "(" + clientGUI.getFormattedTime() + ") " + username + ": " + messageToSend;
                 bufferedWriter.write("PUBLIC_MESSAGE " + formattedMessage);
                 bufferedWriter.newLine();
@@ -90,30 +77,29 @@ public class Client {
         }
     }
 
-    // Handles sending private messages to specific users
+    // Sends a private message to a specific recipient
+    // Formats the message and sends it to the server
     private void sendPrivateMessage(String messageToSend) {
         String[] parts = messageToSend.split(" ", 3);
         if (parts.length == 3) {
             String recipient = parts[1];
             String message = parts[2];
             try {
-                // Formatting the private message before sending
-                String formattedMessage = "(" + clientGUI.getFormattedTime() + ") " + username + " (Private): " + message;
+                String formattedMessage = username + ": " + message;
                 bufferedWriter.write("PRIVATE_MESSAGE " + recipient + " " + formattedMessage);
                 bufferedWriter.newLine();
                 bufferedWriter.flush();
-                // Displaying the message in the GUI
-                clientGUI.appendToMessages(formattedMessage + "\n", true);
+                clientGUI.appendToMessages("(" + clientGUI.getFormattedTime() + ") (Private to " + recipient + "): " + message + "\n", true);
             } catch (IOException e) {
                 closeEverything();
             }
         } else {
-            // Error handling for invalid private message command format
-            clientGUI.appendToMessages("Invalid command format. Use @dm (user name) (message) to send a private message.\n", false);
+            clientGUI.appendToMessages("Invalid private message format. Use @dm (username) (message)\n", false);
         }
     }
 
-    // Sends a request for member details to the server and coordinator
+    // Requests member details from the server
+    // Sends a request to the server to retrieve member information
     private void requestMemberDetails() {
         try {
             bufferedWriter.write("REQUEST_DETAILS");
@@ -124,10 +110,10 @@ public class Client {
         }
     }
 
-    //feature to send typing status to the server
+    // Sends the typing status of the client to the server
+    // Indicates whether the client is currently typing or not
     public void sendTypingStatus(boolean isTyping) {
         try {
-// Notifying the server of the user's typing status
             bufferedWriter.write("TYPING " + username + " " + (isTyping ? "TRUE" : "FALSE"));
             bufferedWriter.newLine();
             bufferedWriter.flush();
@@ -136,18 +122,15 @@ public class Client {
         }
     }
 
-    // Listening for messages from the server and handling them in the GUI
+    // Listens for incoming messages from the server
+    // Handles the received messages and updates the GUI accordingly
     public void listenForMessage() {
         new Thread(() -> {
             String messageFromGroupChat;
+
             while (!socket.isClosed()) {
                 try {
-                    // Read messages from the server and handle them via the GUI
-                    // Read messages from the server and handle them via the GUI
                     messageFromGroupChat = bufferedReader.readLine();
-                    if (messageFromGroupChat != null) {
-                        clientGUI.handleMessage(messageFromGroupChat);
-                    }
                     if (messageFromGroupChat != null) {
                         clientGUI.handleMessage(messageFromGroupChat);
                     }
@@ -159,25 +142,22 @@ public class Client {
         }).start();
     }
 
-    // Closes the socket and IO streams cleanly, also closes the GUI window
+    // Closes all the resources (streams and socket) and the GUI window
+    // Ensures proper cleanup when the client is shutting down
     public void closeEverything() {
         try {
             if (bufferedReader != null) bufferedReader.close();
             if (bufferedWriter != null) bufferedWriter.close();
             if (socket != null && !socket.isClosed()) socket.close();
-            // Closing the GUI window upon disconnection
-            clientGUI.closeWindow();
-            if (socket != null && !socket.isClosed()) socket.close();
-            // Closing the GUI window upon disconnection
             clientGUI.closeWindow();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    // Main method to use GUI dialogs for inputs
+    // Main method to start the client application
+    // Prompts the user for the server's IP address, port number, and username
     public static void main(String[] args) {
-        // Using GUI dialogs for getting connection details and username
         String host = ClientGUI.showInputDialog("Enter IP address:");
         String portString = ClientGUI.showInputDialog("Enter port number:");
         String username = ClientGUI.showInputDialog("Enter your username:");
@@ -196,8 +176,5 @@ public class Client {
         } else {
             ClientGUI.showErrorMessage("IP address, port number, and username are required to join the chat.");
         }
-    }   
+    }
 }
-
-
-

@@ -1,4 +1,15 @@
-package src;
+// COMP1549 - Advanced Programming
+
+// GROUP 67
+// Group members:
+// - Omith Chowdhury - 001236697
+// - Daim Ahmed - 001223454
+// - Mohammed Amiin Mohammed - 001223569
+// - Tuong-Luan X Bach - 001232844
+// - Zafer Ahmed - 001225733
+
+// CODE FOR THE CLINT GUI
+
 import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.*;
@@ -21,6 +32,8 @@ public class ClientGUI {
     private boolean isTyping = false;
     private JLabel typingStatusLabel;
 
+    // Constructor for the ClientGUI class
+    // Initializes the GUI components and welcomes the user
     public ClientGUI(Client client, String username) {
         this.client = client;
         this.username = username;
@@ -29,6 +42,8 @@ public class ClientGUI {
         welcomeUser();
     }
 
+    // Initializes the GUI components and sets up event listeners
+    // Creates the main frame, text pane, input field, buttons, and panels
     private void initializeGUI() {
         try {
             // Set a modern cross-platform UI look and feel
@@ -114,12 +129,16 @@ public class ClientGUI {
         });
     }
 
+    // Welcomes the user to the chat
+    // Appends a welcome message to the text pane
     private void welcomeUser() {
         SwingUtilities.invokeLater(() -> {
             appendToMessages("Welcome to the chat, " + username + "!\n", false);
         });
     }
 
+    // Sends a message from the GUI to the server
+    // Appends the sent message to the text pane
     private void sendMessageFromGUI() {
         String messageToSend = textFieldInput.getText();
         if (!messageToSend.equals("")) {
@@ -130,10 +149,14 @@ public class ClientGUI {
         }
     }
 
+    // Returns the current time in a formatted string
+    // Uses SimpleDateFormat to format the current time
     public String getFormattedTime() {
         return dateFormat.format(new Date());
     }
 
+    // Appends a message to the text pane
+    // Applies different styles based on whether the message is from the user or others
     public void appendToMessages(String message, boolean isSelf) {
         SwingUtilities.invokeLater(() -> {
             try {
@@ -153,6 +176,8 @@ public class ClientGUI {
         });
     }
 
+    // Handles incoming messages from the server
+    // Determines the message type and delegates to the appropriate method
     public void handleMessage(String message) {
         if (message.startsWith("TYPING")) {
             handleTypingStatus(message);
@@ -166,18 +191,19 @@ public class ClientGUI {
         }
     }
 
+    // Handles incoming private messages
+    // Extracts the relevant information and appends the message to the text pane
     private void handlePrivateMessage(String privateMessage) {
         String[] parts = privateMessage.split(" ", 3);
-    
-        if (parts.length == 3 && parts[1].equals(username)) {
-            String formattedMessage = parts[2];
-            int timeEndIndex = formattedMessage.indexOf(")");
-            String time = formattedMessage.substring(0, timeEndIndex + 1);
-            String message = formattedMessage.substring(timeEndIndex + 2);
-            appendToMessages(time + " " + message + "\n", false);
+        if (parts.length >= 3 && parts[1].equals(username)) {
+            String sender = parts[2].substring(0, parts[2].indexOf(":"));
+            String message = parts[2].substring(parts[2].indexOf(":") + 2);
+            appendToMessages("(" + getFormattedTime() + ") (Private from " + sender + "): " + message + "\n", false);
         }
     }
 
+    // Handles typing status messages from other users
+    // Updates the typing status label accordingly
     private void handleTypingStatus(String statusMessage) {
         String[] parts = statusMessage.split(" ");
         if (parts.length >= 3 && !parts[1].equals(username)) {
@@ -186,14 +212,20 @@ public class ClientGUI {
         }
     }
 
+    // Closes the GUI window
+    // Disposes the main frame
     public void closeWindow() {
         frame.dispose();
     }
 
+    // Shows an input dialog with the specified message
+    // Returns the user's input as a string
     public static String showInputDialog(String message) {
         return JOptionPane.showInputDialog(null, message);
     }
 
+    // Shows an error message dialog with the specified message
+    // Displays the message in an error dialog box
     public static void showErrorMessage(String message) {
         JOptionPane.showMessageDialog(null, message, "Error", JOptionPane.ERROR_MESSAGE);
     }
