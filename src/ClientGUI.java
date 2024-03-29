@@ -24,7 +24,7 @@ public class ClientGUI {
     private JTextPane textPaneMessages;
     private JTextField textFieldInput;
     private JButton buttonSend;
-    private JButton buttonRequestDetails; // Added button for requesting member details
+    private JButton buttonRequestDetails;
     private JPanel panelInput;
     private JScrollPane scrollPane;
     private StyledDocument doc;
