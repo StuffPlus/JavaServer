@@ -9,7 +9,7 @@
 // - Zafer Ahmed - 001225733
 
 // CODE FOR THE SERVER
-
+package src;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;

@@ -9,7 +9,7 @@
 // - Zafer Ahmed - 001225733
 
 // CODE FOR THE CLINT GUI
-
+package src;
 import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.*;

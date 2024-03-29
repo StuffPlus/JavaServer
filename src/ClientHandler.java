@@ -9,7 +9,7 @@
 // - Zafer Ahmed - 001225733
 
 // CODE FOR HANDLING THE CLIENT
-
+package src;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;

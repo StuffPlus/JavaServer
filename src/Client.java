@@ -9,6 +9,7 @@
 // - Zafer Ahmed - 001225733
 
 // CODE FOR THE CLIENTS OF THE APPLICATION
+package src;
 import java.io.*;
 import java.net.*;
 
